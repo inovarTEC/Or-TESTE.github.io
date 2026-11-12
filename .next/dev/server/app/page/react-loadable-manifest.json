@@ -1,0 +1,9 @@
+{
+  "[project]/app/components/orca-app.tsx [app-client] (ecmascript, next/dynamic entry)": {
+    "id": "[project]/app/components/orca-app.tsx [app-client] (ecmascript, next/dynamic entry)",
+    "files": [
+      "static/chunks/_1pwi7v_meaobb._.js",
+      "static/chunks/node_modules_18-zat1toj8z_._.js"
+    ]
+  }
+}

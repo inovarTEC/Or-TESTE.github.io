@@ -1,0 +1,5 @@
+{
+  "/api/calcular/route": "app/api/calcular/route.js",
+  "/api/circuitos/route": "app/api/circuitos/route.js",
+  "/page": "app/page.js"
+}
