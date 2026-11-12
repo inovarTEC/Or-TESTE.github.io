@@ -104,7 +104,7 @@ export default function CircuitosCard() {
                 <span className="block text-[11px] text-muted-foreground leading-tight mt-1">{o.texto}</span>
                 {r && (
                   <span className="block text-xs mt-2">
-                    <strong>{r.disjuntores}</strong> disjuntores · <strong>{r.metrosCabo}</strong> m de cabo
+                    <strong>{r.disjuntores}</strong> {r.disjuntores === 1 ? 'disjuntor' : 'disjuntores'} · <strong>{r.metrosCabo}</strong> m de cabo
                     {menos > 0 && <span className="block text-green-700 font-medium">−{menos} {menos === 1 ? 'disjuntor' : 'disjuntores'} que o padrão</span>}
                   </span>
                 )}
@@ -113,7 +113,7 @@ export default function CircuitosCard() {
           })}
         </div>
         <p className="text-[11px] text-muted-foreground">
-          Disjuntores contam os circuitos de luz e tomadas{cmp ? ` e os ${cmp.nTUE} de equipamentos (chuveiro, ar-condicionado...)` : ' e os de equipamentos'}. Metros = trajeto do cabo do quadro até os cômodos (cada fio).
+          Disjuntores contam os circuitos de luz e tomadas{cmp && cmp.nTUE > 0 ? ` e os ${cmp.nTUE} de equipamentos (chuveiro, ar-condicionado...)` : ' e os de equipamentos, quando houver'}. Metros = trajeto do cabo do quadro até os cômodos (cada fio).
         </p>
 
         {cmp?.atual?.avisos?.length ? (

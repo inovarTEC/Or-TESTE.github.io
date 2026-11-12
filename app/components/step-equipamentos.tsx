@@ -8,10 +8,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, Zap, Cpu, AlertTriangle, ClipboardList } from 'lucide-react';
+import { Plus, Trash2, Zap, Cpu, AlertTriangle, ClipboardList, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { infoUf } from '@/lib/tensao-por-uf';
 import { PONTO_LABEL, PontoEquip, pontoSugerido, distanciaEquip, resumoPonto, correnteEquip, avisoCorrente } from '@/lib/ponto-equip';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CircuitosCard from './circuitos-card';
 import { toast } from 'sonner';
@@ -43,10 +43,22 @@ export default function StepEquipamentos() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rede380, equips]);
 
+  // Só um equipamento fica aberto por vez; o mais novo aparece primeiro (a ordem guardada e a do PDF não mudam).
+  const incompleto = (q: Equip) => !q?.tipo || !q?.room || !q?.pot || !q?.tens;
+  const [aberto, setAberto] = useState<string | null>(() => {
+    if (store?.activeEquipId) return store.activeEquipId; // vindo de uma pendência da prévia
+    return [...equips].reverse().find(incompleto)?.id ?? null;
+  });
+  const ordem = equips.map((e: Equip, idx: number) => ({ e, idx })).reverse();
+  const resumoEquip = (q: Equip) => {
+    const rm = rooms.find((x: Room) => x?.id === q?.room);
+    return [rm ? (rm.nome || rm.base) : 'sem cômodo', q?.pot ? `${q.pot} W` : null, q?.tens || null].filter(Boolean).join(' · ');
+  };
+
   const addEquip = () => {
-    store.addEquip({
-      id: uid(), tipo: '', room: '', pot: '', tens: '', dint: '', dist: '', alim: '', cx: '4x2',
-    });
+    const id = uid();
+    store.addEquip({ id, tipo: '', room: '', pot: '', tens: '', dint: '', dist: '', alim: '', cx: '4x2' });
+    setAberto(id); // abre o novo e recolhe os anteriores
     toast.success('Equipamento adicionado');
   };
 
@@ -78,20 +90,31 @@ export default function StepEquipamentos() {
         <p className="text-muted-foreground mt-1">Aparelhos que precisam de circuito próprio (chuveiro, ar-condicionado, etc.)</p>
       </div>
 
+      <Button variant="outline" className="w-full" onClick={addEquip}>
+        <Plus className="w-4 h-4 mr-2" /> Adicionar equipamento
+      </Button>
+
       <AnimatePresence mode="popLayout">
-        {equips.map((e: Equip, idx: number) => (
+        {ordem.map(({ e, idx }) => (
           <motion.div key={e?.id} ref={(el: HTMLDivElement | null) => { refs.current[e?.id] = el; }} layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}>
             <Card className="shadow-sm">
               <CardContent className="pt-4 pb-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Cpu className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-semibold">Equipamento {idx + 1}</span>
-                  </div>
-                  <button type="button" onClick={() => { store.removeEquip(e?.id ?? ''); toast.success('Equipamento removido'); }}
+                <div className="flex items-center justify-between gap-2">
+                  <button type="button" aria-expanded={aberto === e?.id} onClick={() => setAberto(aberto === e?.id ? null : (e?.id ?? ''))}
+                    className="flex flex-1 items-center gap-2 text-left min-w-0">
+                    <Cpu className="w-4 h-4 text-primary shrink-0" />
+                    <span className="min-w-0">
+                      <span className="block text-sm font-semibold">Equipamento {idx + 1}{e?.tipo ? ` · ${EQUIP_TIPOS.find((t) => t.value === e.tipo)?.label ?? e.tipo}` : ''}</span>
+                      <span className="block text-xs text-muted-foreground truncate">{resumoEquip(e)}</span>
+                    </span>
+                    {incompleto(e) && <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800">Incompleto</span>}
+                    {aberto === e?.id ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" /> : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />}
+                  </button>
+                  <button type="button" aria-label={`Remover equipamento ${idx + 1}`} onClick={() => { store.removeEquip(e?.id ?? ''); toast.success('Equipamento removido'); }}
                     className="text-destructive hover:text-destructive/80"><Trash2 className="w-4 h-4" /></button>
                 </div>
 
+                {aberto === e?.id && (<div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label className="text-xs">Tipo</Label>
@@ -258,15 +281,16 @@ export default function StepEquipamentos() {
                     </div>
                   );
                 })()}
+
+                <div className="flex justify-end">
+                  <Button type="button" size="sm" variant="outline" onClick={() => setAberto(null)}><Check className="w-4 h-4 mr-1" /> Concluir</Button>
+                </div>
+                </div>)}
               </CardContent>
             </Card>
           </motion.div>
         ))}
       </AnimatePresence>
-
-      <Button variant="outline" className="w-full" onClick={addEquip}>
-        <Plus className="w-4 h-4 mr-2" /> Adicionar equipamento
-      </Button>
 
       {equips.length === 0 && (
         <div className="text-center py-8">

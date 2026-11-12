@@ -57,7 +57,17 @@ export default function StepEntrada() {
       .catch((err) => { if (err?.name !== 'AbortError') { setPadrao(null); setCalculando(false); } });
     return () => ctrl.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [e.potenciaDemandada, e.uf, e.sistemaTensao]);
+  }, [e.uf, e.sistemaTensao]);
+
+  // Potência estimada = demanda calculada (cômodos + equipamentos). Acompanha as mudanças até o usuário digitar um valor;
+  // apagar o campo volta ao automático. Assim sistema, bitola e materiais da entrada partem da carga real.
+  useEffect(() => {
+    if (e.potenciaManual || !padrao) return;
+    const v = Math.round((padrao.demandaKva || 0) * 100) / 100;
+    const txt = v > 0 ? String(v) : '';
+    if (txt !== e.potenciaDemandada) up({ potenciaDemandada: txt });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [padrao, e.potenciaManual, e.potenciaDemandada]);
   const [fn, ff] = vs === '220/127' ? ['127', '220'] : ['220', '380'];
 
   /** UF escolhida: grava a tensão da localidade e pré-preenche o sistema (o usuário pode alterar abaixo). */
@@ -157,8 +167,13 @@ export default function StepEntrada() {
             <div>
               <Label className="text-xs">Potência estimada (kW)</Label>
               <Input type="number" step="0.1" min="0" value={e.potenciaDemandada} placeholder="Ex: 8" className="mt-1"
-                onChange={(ev) => up({ potenciaDemandada: semNegativo(ev.target.value) })} />
-              <p className="mt-1 text-[11px] text-muted-foreground">Soma das cargas principais; a demanda e a categoria são calculadas no PDF (DIS-NOR-030)</p>
+                onChange={(ev) => { const v = semNegativo(ev.target.value); up({ potenciaDemandada: v, potenciaManual: v !== '' }); }} />
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                {e.potenciaManual
+                  ? 'Valor digitado por você. Apague o campo para voltar ao valor calculado.'
+                  : 'Preenchida com a demanda calculada dos seus cômodos e equipamentos (kVA usado como kW). Pode editar.'}{' '}
+                A categoria e a demanda finais são calculadas no PDF (DIS-NOR-030).
+              </p>
             </div>
           </div>
 

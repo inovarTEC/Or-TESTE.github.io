@@ -9,7 +9,7 @@ export function entradaPadrao(): EntradaPrincipal {
   return {
     tipoEntrada: 'aerea', poste: 'nao-tem', sistema: 'monofasico', sistemaManual: false,
     bitola: '6', bitolaManual: false, diametroEletroduto: '1', diametroManual: false,
-    tipoEletroduto: 'rigido', percurso: '', tensao: '220', potenciaDemandada: '', obs: '',
+    tipoEletroduto: 'rigido', percurso: '', tensao: '220', potenciaDemandada: '', potenciaManual: false, obs: '',
   };
 }
 

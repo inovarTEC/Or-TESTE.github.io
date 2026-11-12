@@ -12,6 +12,8 @@ import { Input } from '@/components/ui/input';
 import { Plug, Lightbulb, ToggleLeft, Plus, Trash2, MapPin, AlertTriangle, ClipboardList } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { useState } from 'react';
+import NovoComodoForm from './novo-comodo-form';
 
 const TIPOS_TOMADA: { v: TipoModulo; label: string }[] = [
   { v: 'T10', label: 'Simples 10A' }, { v: 'T10D', label: 'Dupla 10A' }, { v: 'T10T', label: 'Tripla 10A' },
@@ -31,6 +33,7 @@ export default function StepPontos() {
   // Cômodo ativo fica no store: a prévia pode abrir este passo já no cômodo certo.
   const activeRoom = rooms.some((x: Room) => x?.id === store.activeRoomId) ? store.activeRoomId : (rooms?.[0]?.id ?? '');
   const setActiveRoom = (id: string) => store.setActiveRoomId(id);
+  const [novoComodo, setNovoComodo] = useState(false);
 
   const r = rooms.find((x: Room) => x?.id === activeRoom) ?? rooms?.[0];
   const nbr = r ? tomadasNbr(r) : null;
@@ -130,7 +133,15 @@ export default function StepPontos() {
             <MapPin className="w-3 h-3" /> {rm?.nome || rm?.base || 'Cômodo'}
           </button>
         ))}
+        <button type="button" onClick={() => setNovoComodo((v) => !v)} aria-expanded={novoComodo}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap border border-dashed border-primary/50 text-primary hover:bg-primary/5 transition-all">
+          <Plus className="w-3 h-3" /> Cômodo
+        </button>
       </div>
+
+      {novoComodo && (
+        <NovoComodoForm onClose={() => setNovoComodo(false)} onCriado={(id) => { setActiveRoom(id); setNovoComodo(false); }} />
+      )}
 
       {r && (
         <div className="space-y-4">
