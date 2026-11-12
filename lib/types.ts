@@ -140,7 +140,7 @@ export interface EntradaPrincipal {
   percurso: string;
   tensao: string;
   potenciaDemandada: string;
-  /** true = o usuário digitou a potência; false/ausente = o app preenche com a demanda calculada. */
+  /** true = a pessoa digitou a potência (não sobrescrever). false/ausente = preenchida pela demanda calculada. */
   potenciaManual?: boolean;
   obs: string;
   /** Incluir a entrada no orçamento/PDF (ausente = true). */

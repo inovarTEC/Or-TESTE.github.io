@@ -113,7 +113,7 @@ export default function CircuitosCard() {
           })}
         </div>
         <p className="text-[11px] text-muted-foreground">
-          Disjuntores contam os circuitos de luz e tomadas{cmp && cmp.nTUE > 0 ? ` e os ${cmp.nTUE} de equipamentos (chuveiro, ar-condicionado...)` : ' e os de equipamentos, quando houver'}. Metros = trajeto do cabo do quadro até os cômodos (cada fio).
+          Disjuntores contam os circuitos de luz e tomadas{cmp ? ` e os ${cmp.nTUE} de equipamentos (chuveiro, ar-condicionado...)` : ' e os de equipamentos'}. Metros = trajeto do cabo do quadro até os cômodos (cada fio).
         </p>
 
         {cmp?.atual?.avisos?.length ? (

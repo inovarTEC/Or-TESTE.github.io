@@ -195,3 +195,23 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     create: () => emptyRoom('Cômodo', 'Cômodo'),
   },
 ];
+
+
+/** Nome sem repetir os já usados: "Quarto", "Quarto 2", "Quarto 3"... */
+export function nomeUnico(nome: string, rooms: { nome?: string }[]): string {
+  const base = (nome ?? '').trim() || 'Cômodo';
+  const usados = new Set(rooms.map((r) => (r?.nome ?? '').trim().toLowerCase()));
+  if (!usados.has(base.toLowerCase())) return base;
+  let i = 2;
+  while (usados.has(`${base} ${i}`.toLowerCase())) i++;
+  return `${base} ${i}`;
+}
+
+/** Cômodo novo a partir de um modelo. Nome único; medidas opcionais (as tomadas automáticas da NBR 5410 entram no addRoom). */
+export function novoComodo(tpl: RoomTemplate, rooms: { nome?: string }[], extra?: { nome?: string; c?: string; l?: string }): Room {
+  const room = tpl.create();
+  room.nome = nomeUnico(extra?.nome?.trim() || room.nome, rooms);
+  if (extra?.c) room.c = extra.c;
+  if (extra?.l) room.l = extra.l;
+  return room;
+}

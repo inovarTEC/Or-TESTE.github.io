@@ -1,6 +1,6 @@
 'use client';
 import { useStore } from '@/lib/store-cliente';
-import { uid, tomadaPadrao } from '@/lib/templates';
+import { uid, tomadaPadrao, ROOM_TEMPLATES, novoComodo, nomeUnico } from '@/lib/templates';
 import { luzCount } from '@/lib/luz';
 import { Room, Ponto, Luz, Comando, Sw, TipoComando, TipoModulo } from '@/lib/types';
 import { resumoComodo, modulosDe, modulosSw, caixaPorModulos } from '@/lib/resumo-comodo';
@@ -9,11 +9,11 @@ import { gruposTeclas } from '@/lib/nbr5410-regras';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Plug, Lightbulb, ToggleLeft, Plus, Trash2, MapPin, AlertTriangle, ClipboardList } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { toast } from 'sonner';
 import { useState } from 'react';
-import NovoComodoForm from './novo-comodo-form';
+import { toast } from 'sonner';
 
 const TIPOS_TOMADA: { v: TipoModulo; label: string }[] = [
   { v: 'T10', label: 'Simples 10A' }, { v: 'T10D', label: 'Dupla 10A' }, { v: 'T10T', label: 'Tripla 10A' },
@@ -33,7 +33,6 @@ export default function StepPontos() {
   // Cômodo ativo fica no store: a prévia pode abrir este passo já no cômodo certo.
   const activeRoom = rooms.some((x: Room) => x?.id === store.activeRoomId) ? store.activeRoomId : (rooms?.[0]?.id ?? '');
   const setActiveRoom = (id: string) => store.setActiveRoomId(id);
-  const [novoComodo, setNovoComodo] = useState(false);
 
   const r = rooms.find((x: Room) => x?.id === activeRoom) ?? rooms?.[0];
   const nbr = r ? tomadasNbr(r) : null;
@@ -103,6 +102,30 @@ export default function StepPontos() {
     toast.success(`${diff} ponto(s) de luz sugerido(s)`);
   };
 
+  // "+ Cômodo": cria um cômodo novo sem sair desta etapa (com medidas, para as tomadas da NBR 5410).
+  const [novoAberto, setNovoAberto] = useState(false);
+  const [novoModelo, setNovoModelo] = useState(0);
+  const [novoNome, setNovoNome] = useState('');
+  const [novoC, setNovoC] = useState('');
+  const [novoL, setNovoL] = useState('');
+  const abrirNovo = () => {
+    setNovoModelo(0); setNovoNome(nomeUnico(ROOM_TEMPLATES[0].create().nome, rooms)); setNovoC(''); setNovoL('');
+    setNovoAberto(true);
+  };
+  const trocarModelo = (i: number) => {
+    setNovoModelo(i);
+    setNovoNome(nomeUnico(ROOM_TEMPLATES[i].create().nome, rooms));
+  };
+  const medidasOk = (parseFloat(novoC) || 0) > 0 && (parseFloat(novoL) || 0) > 0;
+  const criarComodo = () => {
+    if (!medidasOk) { toast.error('Informe comprimento e largura maiores que zero'); return; }
+    const room = novoComodo(ROOM_TEMPLATES[novoModelo] ?? ROOM_TEMPLATES[0], rooms, { nome: novoNome, c: novoC, l: novoL });
+    store.addRoom(room);
+    setActiveRoom(room.id); // a aba do cômodo novo já abre
+    setNovoAberto(false);
+    toast.success(`${room.nome} adicionado`);
+  };
+
   const cmdDaLuz = (luzId: string) => (r?.comandos ?? []).find((c: Comando) => (c?.luzes ?? []).includes(luzId));
   const resumo = r ? resumoComodo(r) : null;
   const selCls = 'rounded-md border border-input bg-card px-2 py-1 text-xs';
@@ -133,14 +156,44 @@ export default function StepPontos() {
             <MapPin className="w-3 h-3" /> {rm?.nome || rm?.base || 'Cômodo'}
           </button>
         ))}
-        <button type="button" onClick={() => setNovoComodo((v) => !v)} aria-expanded={novoComodo}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap border border-dashed border-primary/50 text-primary hover:bg-primary/5 transition-all">
+        <button type="button" onClick={() => (novoAberto ? setNovoAberto(false) : abrirNovo())} aria-label="Adicionar cômodo"
+          className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap border border-dashed transition-all ${novoAberto ? 'border-primary text-primary bg-primary/5' : 'border-primary/50 text-primary hover:bg-primary/5'}`}>
           <Plus className="w-3 h-3" /> Cômodo
         </button>
       </div>
 
-      {novoComodo && (
-        <NovoComodoForm onClose={() => setNovoComodo(false)} onCriado={(id) => { setActiveRoom(id); setNovoComodo(false); }} />
+      {novoAberto && (
+        <Card className="shadow-sm border-primary/40">
+          <CardContent className="pt-4 pb-4 space-y-3">
+            <p className="text-sm font-semibold">Novo cômodo</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Modelo</Label>
+                <select value={novoModelo} onChange={(ev: any) => trocarModelo(parseInt(ev?.target?.value, 10) || 0)}
+                  className="mt-1 w-full rounded-lg border border-input bg-card px-3 py-2 text-sm">
+                  {ROOM_TEMPLATES.map((t, i) => <option key={t.label} value={i}>{t.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <Label className="text-xs">Nome</Label>
+                <Input value={novoNome} onChange={(ev: any) => setNovoNome(ev?.target?.value ?? '')} className="mt-1" />
+              </div>
+              <div>
+                <Label className="text-xs">Comprimento (m)</Label>
+                <Input type="number" step="0.1" min="0" value={novoC} onChange={(ev: any) => setNovoC(semNegativo(ev?.target?.value))} placeholder="0.0" className="mt-1" />
+              </div>
+              <div>
+                <Label className="text-xs">Largura (m)</Label>
+                <Input type="number" step="0.1" min="0" value={novoL} onChange={(ev: any) => setNovoL(semNegativo(ev?.target?.value))} placeholder="0.0" className="mt-1" />
+              </div>
+            </div>
+            <p className="text-[11px] text-muted-foreground">As medidas são necessárias para calcular as tomadas pela NBR 5410.</p>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" size="sm" onClick={() => setNovoAberto(false)}>Cancelar</Button>
+              <Button size="sm" onClick={criarComodo} disabled={!medidasOk}>Criar cômodo</Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {r && (

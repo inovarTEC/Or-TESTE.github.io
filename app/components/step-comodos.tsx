@@ -1,10 +1,9 @@
 'use client';
 import { useStore } from '@/lib/store-cliente';
-import { ROOM_TEMPLATES } from '@/lib/templates';
+import { ROOM_TEMPLATES, novoComodo } from '@/lib/templates';
 import { semNegativo } from '@/lib/validacao';
 import { Room } from '@/lib/types';
 import { qtdTomadasAuto } from '@/lib/tomadas-auto';
-import { criarComodo } from '@/lib/novo-comodo';
 import { perimetro } from '@/lib/nbr5410-regras';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -29,10 +28,12 @@ export default function StepComodos() {
   const [advancedOpen, setAdvancedOpen] = useState<Record<string, boolean>>({});
 
   const addFromTemplate = (tpl: typeof ROOM_TEMPLATES[0]) => {
-    const room = criarComodo(tpl, rooms);
+    const room = novoComodo(tpl, rooms);
     store.addRoom(room);
+    // O cômodo novo aparece primeiro e já aberto; os outros ficam fechados (só um aberto por vez).
     setExpanded(room.id);
     setShowTemplates(false);
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
     toast.success(`${room.nome} adicionado`);
   };
 
@@ -55,23 +56,18 @@ export default function StepComodos() {
         <p className="text-xs text-muted-foreground mt-1">As tomadas dos modelos aumentam sozinhas se o cômodo for maior (NBR 5410, pelo perímetro).</p>
       </div>
 
-      {/* Adicionar: sempre no topo, para não precisar rolar a página */}
-      {!showTemplates && (
-        <Button variant="outline" className="w-full" onClick={() => setShowTemplates(true)}>
-          <Plus className="w-4 h-4 mr-2" /> Adicionar cômodo
+      {/* Botão fixo no topo da lista: não precisa rolar a página para adicionar outro cômodo */}
+      {rooms.length > 0 && (
+        <Button variant={showTemplates ? 'secondary' : 'outline'} className="w-full" onClick={() => setShowTemplates((v) => !v)}>
+          <Plus className="w-4 h-4 mr-2" /> {showTemplates ? 'Fechar modelos' : 'Adicionar cômodo'}
         </Button>
       )}
 
       {/* Templates */}
-      {showTemplates && (
+      {(showTemplates || rooms.length === 0) && (
         <Card className="shadow-sm">
           <CardContent className="pt-5 pb-5">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-semibold">Escolha um modelo pronto ou comece do zero</p>
-              {rooms.length > 0 && (
-                <button type="button" onClick={() => setShowTemplates(false)} className="text-xs text-muted-foreground hover:text-foreground">Cancelar</button>
-              )}
-            </div>
+            <p className="text-sm font-semibold mb-3">Escolha um modelo pronto ou comece do zero</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {ROOM_TEMPLATES.map((tpl) => {
                 const Ic = ICONS[tpl.icon] ?? Plus;
@@ -89,7 +85,7 @@ export default function StepComodos() {
         </Card>
       )}
 
-      {/* Room list: o cômodo mais novo aparece primeiro (a ordem guardada, do PDF e das abas não muda) */}
+      {/* Lista: o mais novo primeiro. Só na tela — a ordem guardada (abas, circuitos, PDF) não muda. */}
       <AnimatePresence mode="popLayout">
         {[...rooms].reverse().map((r: Room) => (
           <motion.div key={r?.id} layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}>

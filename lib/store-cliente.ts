@@ -274,7 +274,11 @@ export const useStore = create<Store>((set) => {
       const limpo = limparOrfaos({ rooms: dados.rooms ?? [], equips: dados.equips ?? [] });
       set({
         ...defaultState(), ...dados, ...limpo, step,
-        entrada: { ...entradaPadrao(), ...(d.entrada ?? {}) },
+        // Orçamento antigo com potência digitada (sem a flag): é manual, não sobrescrever.
+        entrada: {
+          ...entradaPadrao(), ...(d.entrada ?? {}),
+          potenciaManual: d.entrada?.potenciaManual ?? !!d.entrada?.potenciaDemandada,
+        },
         aterramento: { ...aterramentoPadrao(), ...(d.aterramento ?? {}) },
         circuitos: podarConfig({ ...configPadrao(), ...(d.circuitos ?? {}) }, limpo.rooms),
       });

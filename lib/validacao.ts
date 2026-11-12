@@ -149,7 +149,7 @@ export function problemaEstrutura(d: any): string | null {
     if (!opcional(en.tipoEntrada, ENT_TIPO) || !opcional(en.poste, ENT_POSTE) || !opcional(en.sistema, ENT_SISTEMA)
       || !opcional(en.bitola, ENT_BITOLA) || !opcional(en.diametroEletroduto, ENT_DIAM) || !opcional(en.tipoEletroduto, ENT_ELETRODUTO)
       || !opcional(en.unidadeEletroduto, ENT_UNIDADE)
-      || !opcional(en.tensao, ENT_TENSAO) || !bool(en.sistemaManual) || !bool(en.bitolaManual) || !bool(en.diametroManual) || !bool(en.potenciaManual)
+      || !opcional(en.tensao, ENT_TENSAO) || !bool(en.sistemaManual) || !bool(en.bitolaManual) || !bool(en.diametroManual)
       || !texto(en.obs, LIM.obs) || !bool(en.incluirNoPdf)
       || !opcional(en.sistemaTensao, ['220/127', '380/220', 'nao-sei']) || !opcional(en.ligacao, ['M', 'B', 'T', 'nao-sei'])
       || !opcional(en.uf, ['', ...UFS.map((u) => u.uf)])) return 'entrada inválida';
