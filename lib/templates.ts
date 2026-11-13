@@ -1,4 +1,4 @@
-import { Room, Ponto, Luz, Comando } from './types';
+﻿import { Room, Ponto, Luz, Comando } from './types';
 
 let _uid = 0;
 export function uid(): string {
@@ -36,9 +36,9 @@ function mkComandoSimples(luzIds: string[]): Comando {
  */
 export function dpadPorTipo(tipo: string): string {
   const t = (tipo ?? '').toLowerCase();
-  if (/cozinha|copa|servi|lavanderia|banheiro|lavabo/.test(t)) return '1.0';
-  if (/garagem|varanda|terra[cç]o|subsolo/.test(t)) return '2.0';
-  return '1.5';
+  if (/cozinha|copa|servi|lavanderia|banheiro|lavabo/.test(t)) return '3';
+  if (/garagem|varanda|terra[cç]o|subsolo/.test(t)) return '5';
+  return '5';
 }
 
 /**
@@ -104,7 +104,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     icon: 'Bed',
     create: () => {
       const r = emptyRoom('Quarto', 'Suíte 2');
-      r.dpad = '1.5';
+      r.dpad = '4';
       r.pontos = Array.from({ length: 3 }, () => mkPonto('baixa', [{ t: 'T10D' }]));
       const luz = mkLuz();
       r.luzes = [luz];
@@ -118,7 +118,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     icon: 'Bed',
     create: () => {
       const r = emptyRoom('Quarto', 'Suíte 3');
-      r.dpad = '1.5';
+      r.dpad = '4';
       r.pontos = Array.from({ length: 4 }, () => mkPonto('baixa', [{ t: 'T10D' }]));
       const l1 = mkLuz(); const l2 = mkLuz();
       r.luzes = [l1, l2];
@@ -128,11 +128,11 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   },
   {
     label: 'Sala típica',
-    desc: '5 tomadas duplas, 2 luzes, 1 interruptor',
+    desc: '4 tomadas duplas, 2 luzes, 1 interruptor',
     icon: 'Sofa',
     create: () => {
       const r = emptyRoom('Sala', 'Sala');
-      r.pontos = Array.from({ length: 5 }, () => mkPonto('baixa', [{ t: 'T10D' }]));
+      r.pontos = Array.from({ length: 4 }, () => mkPonto('baixa', [{ t: 'T10D' }]));
       const l1 = mkLuz(); const l2 = mkLuz();
       r.luzes = [l1, l2];
       r.comandos = [mkComandoSimples([l1.id, l2.id])];
@@ -141,7 +141,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   },
   {
     label: 'Cozinha típica',
-    desc: '3 tomadas 10A, 2 tomadas 20A, 1 luz',
+    desc: '4 tomadas 10A, 2 tomadas 20A, 1 luz',
     icon: 'CookingPot',
     create: () => {
       const r = emptyRoom('Cozinha', 'Cozinha');
@@ -149,7 +149,6 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
         mkPonto('media', [{ t: 'T10' }]),
         mkPonto('media', [{ t: 'T10' }]),
         mkPonto('media', [{ t: 'T10' }]),
-        mkPonto('media', [{ t: 'T20' }]),
         mkPonto('media', [{ t: 'T20' }]),
       ];
       const luz = mkLuz();
@@ -160,11 +159,11 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   },
   {
     label: 'Banheiro típico',
-    desc: '2 tomadas, 1 luz, 1 interruptor',
+    desc: '1 tomadas, 1 luz, 1 interruptor',
     icon: 'Bath',
     create: () => {
       const r = emptyRoom('Banheiro', 'Banheiro');
-      r.pontos = [mkPonto('media', [{ t: 'T10' }]), mkPonto('media', [{ t: 'T10' }])];
+      r.pontos = [mkPonto('media', [{ t: 'T10' }])];
       const luz = mkLuz();
       r.luzes = [luz];
       r.comandos = [mkComandoSimples([luz.id])];
@@ -173,12 +172,12 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   },
   {
     label: 'Área de serviço',
-    desc: '2 tomadas 10A, 1 tomada 20A, 1 luz',
+    desc: '1 tomadas 10A, 1 tomada 20A, 1 luz',
     icon: 'WashingMachine',
     create: () => {
       const r = emptyRoom('Área de serviço', 'Área de serviço');
       r.pontos = [
-        mkPonto('media', [{ t: 'T10' }]),
+
         mkPonto('media', [{ t: 'T10' }]),
         mkPonto('media', [{ t: 'T20' }]),
       ];

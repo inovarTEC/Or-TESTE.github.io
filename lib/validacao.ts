@@ -1,4 +1,4 @@
-/* ===== Validação compartilhada: wizard (navegador) e rotas de API (servidor) ===== */
+﻿/* ===== Validação compartilhada: wizard (navegador) e rotas de API (servidor) ===== */
 import { UFS } from './tensao-por-uf';
 import type { DadosOrcamento, Room } from './types';
 import { minTomadas, perimetro, pontosTomada } from './nbr5410-regras';
@@ -171,7 +171,7 @@ export function problemaEstrutura(d: any): string | null {
   if (at !== undefined) {
     if (!at || typeof at !== 'object' || Array.isArray(at)) return 'aterramento inválido';
     const inteiro = (v: unknown, max: number) => v === undefined || (Number.isInteger(v) && (v as number) >= 0 && (v as number) <= max);
-    if (!inteiro(at.nHastes, 50) || !inteiro(at.nCaixasInspecao, 50) || !opcional(at.comprimentoHaste, ['2.4'])
+    if (!inteiro(at.nHastes, 50) || !inteiro(at.nCaixasInspecao, 50) || !inteiro(at.nConectores, 50) || !opcional(at.comprimentoHaste, ['2.4'])
       || !opcional(at.bitolaCabo, ['6', '10']) || !texto(at.obs, LIM.obs) || !bool(at.incluirNoPdf)) return 'aterramento inválido';
     if (!medida(at.distancia, LIM.metros)) return 'medida do aterramento inválida';
   }

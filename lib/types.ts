@@ -1,4 +1,4 @@
-/* ===== OrçaElétrica — Tipos do modelo de dados ===== */
+﻿/* ===== OrçaElétrica — Tipos do modelo de dados ===== */
 
 export type TipoImovel = 'Casa' | 'Apartamento' | 'Comércio pequeno' | '';
 export type TipoObra = 'Construção nova' | 'Reforma' | 'Ampliação' | '';
@@ -152,6 +152,8 @@ export interface AterramentoPrincipal {
   nHastes: number;
   comprimentoHaste: '2.4';
   nCaixasInspecao: number;
+  /** Conectores de haste. Ausente = acompanha o número de hastes. */
+  nConectores?: number;
   bitolaCabo: '6' | '10';
   distancia: string;
   obs: string;
